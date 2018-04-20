@@ -1,2 +1,7 @@
-# KIV_KPG_Fractal
-Domácí úkol z KIV/KPG.
+# 7. domácí úkol z KIV/KPG
+## Fraktály
+
+Adresáře
+- src - Zdrojové kódy aplikace
+- doc - Dokumentace
+
