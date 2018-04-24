@@ -23,6 +23,8 @@ public class Hilbert {
     }
     
     private Point hindex2xy(int hindex, int N) {
+
+    	System.out.println("INDEX = " + hindex + " START (N = " + N + ")");
     	
     	Point[] positions = new Point[4];
     	positions[0] = new Point(0D, 0D);
@@ -36,6 +38,8 @@ public class Hilbert {
         double x = tmp.getX();
         double y = tmp.getY();
 
+        System.out.println("INDEX >> " + hindex + " x: " + x + " y: " + y);
+         
         double loc = x;
         
         for (int n = 4; n <= N; n *= 2) {
@@ -63,11 +67,13 @@ public class Hilbert {
             		break;
             	}
             hindex = (hindex >>> 2);
+            System.out.println("INDEX >> " + hindex + " x: " + x + " y: " + y);
         }
         return new Point(x, y);
     }
     
 	public LineSegment[] firstGeneration(GraphicsContext g, Canvas activeCanvas) {
+		
 		int N = 2;
 
 		Point prev = new Point(0, 0);
@@ -93,6 +99,8 @@ public class Hilbert {
     }
 	
 	public LineSegment[] nextGeneration(LineSegment[] generation) {	
+		System.out.println("==============================================================");
+		
 		int N = (int) Math.sqrt(generation.length) * 2;
 		
 		Point prev = new Point(0, 0);
