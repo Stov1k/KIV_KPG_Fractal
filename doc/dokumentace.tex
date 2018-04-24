@@ -31,11 +31,19 @@ Zadáním úkolu je vytvoření nového programu nebo rozšíření programu ze 
 \paragraph{}
 \textbf{Fraktál} je\nobreakspace seběpodobný útvar, to znamená, že lze pozorovat stále opakující\nobreakspace se tvar. Mezi známe fraktály patří Sierpińského koberec, Sierpińského trojúhelník, či křivka vyplňující prostor.
 
-\paragraph{}
-V této práci se budu zabývat křivka vyplňující prostor, konkrétně \textbf{Hilbertovou křivkou}. Budu implementovat algoritmus, který index bodu Hilbertovy křivky převede do kartézské soustavy souřadnic.
+V této práci se budu zabývat křivka vyplňující prostor, konkrétně \textbf{Hilbertovou křivkou}.
+
+\section{Popis řešení}
 
 \paragraph{}
-Algoritmus bude předpokládat, že bod s indexem $0$ bude na pozici $[0,0]$. 
+Vykreslování probíhá ve\nobreakspace třídě \emph{Drawing}. Algortitmy fraktálů\nobreakspace se nacházejí v balíčku \emph{fractal}.
+
+\subsection{Hilbertova křivka}
+\paragraph{}
+V práci je implementován algoritmus, který index bodu Hilbertovy křivky převádí do kartézské soustavy souřadnic bez použití rekurze. Algoritmus předpokládá, že bod s indexem $0$ je na pozici $[0,0]$. V první iteraci existují právě 4 body a počáteční křivka je pevně daná.
+
+\paragraph{}
+Pozice následujících bodů se dopočítávají podle indexu. Poslední 2 bity označují umístění bodu v rámci čtveřice bodů (tj.\nobreakspace tvar křivky v první iteraci), následující dvojice bitů označuje umístění předešlé čtveřice bodů v rámci šestnáctice bodů (tj.\nobreakspace křivka v druhé iteraci).
 
 \begin{figure}[!ht]
 	\centering
@@ -43,11 +51,6 @@ Algoritmus bude předpokládat, že bod s indexem $0$ bude na pozici $[0,0]$.
 	\includegraphics[width=0.85\textwidth,natwidth=1,natheight=1]{hilbert.pdf}
 	\caption{Indexy bodů v třetí iteraci}
 \end{figure}
-
-\section{Popis řešení}
-
-\paragraph{}
-Vykreslování probíhá ve\nobreakspace třídě \emph{Drawing}. Algortitmy fraktálů\nobreakspace  se nacházejí v balíčku \emph{fractal}.
 
 \newpage
 \section{Uživatelská dokumentace}
