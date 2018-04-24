@@ -1,18 +1,11 @@
 package cz.pavelzelenka.fractal;
 
-import java.awt.image.RenderedImage;
-import java.io.File;
-
-import javax.imageio.ImageIO;
-
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ColorPicker;
@@ -24,12 +17,11 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.stage.FileChooser;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -97,37 +89,56 @@ public class WindowLayout {
 		hBox.setStyle("-fx-font-size: 9pt;");
 		
 		Label fractalLabel = new Label("Fractal:");
-		ChoiceBox<String> fractalChoiceBox = new ChoiceBox<String>();
-//		splineChoiceBox.getSelectionModel().select(drawing.getSpline());
+		ChoiceBox<Integer> fractalChoiceBox = new ChoiceBox<Integer>(FXCollections.observableArrayList(1, 2, 3, 4));
+		fractalChoiceBox.getSelectionModel().select(drawing.getCurve()-1);
 		
 		Label colorLabel = new Label("Color:");
 		ColorPicker colorPicker = new ColorPicker();
-		colorPicker.setValue(drawing.getSplineColor());
+		colorPicker.setValue(drawing.getStrokeColor());
 		colorPicker.setPrefWidth(50D);
+		
+		Label backgroundLabel = new Label("Background:");
+		ColorPicker backgroundPicker = new ColorPicker();
+		backgroundPicker.setValue(drawing.getBackgroundColor());
+		backgroundPicker.setPrefWidth(50D);
+		
+		VBox pickerVBox = new VBox();
+		pickerVBox.getChildren().addAll(colorLabel, colorPicker, backgroundLabel, backgroundPicker);
 		
 		Label lineWidthLabel = new Label("Line Width:");
 		Slider lineWidthSlider = new Slider(); 
-		lineWidthSlider.setMin(1);
-		lineWidthSlider.setMax(14);
+		lineWidthSlider.setMin(Drawing.MIN_LINE_WIDTH);
+		lineWidthSlider.setMax(Drawing.MAX_LINE_WIDTH);
 		lineWidthSlider.setValue(drawing.getLineWidth());
 		lineWidthSlider.setBlockIncrement(1);
 		
+		Label pointSizeLabel = new Label("Point Size:");
+		Slider pointSizeSlider = new Slider(); 
+		pointSizeSlider.setMin(Drawing.MIN_POINT_SIZE);
+		pointSizeSlider.setMax(Drawing.MAX_POINT_SIZE);
+		pointSizeSlider.setValue(drawing.getLineWidth());
+		pointSizeSlider.setBlockIncrement(1);
+		
+		VBox sliderVBox = new VBox();
+		sliderVBox.getChildren().addAll(lineWidthLabel, lineWidthSlider, pointSizeLabel, pointSizeSlider);
+		
 		Pane pane = new Pane();
+
 		HBox.setHgrow(pane, Priority.ALWAYS);
 		
 		Button clearButton = new Button("Clear");
 		
-		hBox.getChildren().addAll(fractalLabel, fractalChoiceBox, colorLabel, colorPicker, lineWidthLabel, lineWidthSlider, pane, clearButton);
+		hBox.getChildren().addAll(fractalLabel, fractalChoiceBox, pickerVBox, sliderVBox, pane, clearButton);
 		
 		clearButton.setOnAction(action -> {
 			if(drawing != null) {
-				drawing.throwOutSpline();
+				drawing.throwOut();
 			}
 		});
 		
 		fractalChoiceBox.valueProperty().addListener((observable, oldValue, newValue) -> {
 			if(newValue != null) {
-			//	drawing.setSpline(newValue);
+				drawing.setCurve(newValue);
 			}
 		});
 		
@@ -139,9 +150,23 @@ public class WindowLayout {
 			}
 		});
 		
+		pointSizeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if(drawing != null) {
+				if(newValue != null) {
+					drawing.setPointSize(newValue.doubleValue());
+				}
+			}
+		});
+		
 		colorPicker.valueProperty().addListener((observable, oldValue, newValue) -> {
 			if(newValue != null) {
-				drawing.setSplineColor(newValue);
+				drawing.setStrokeColor(newValue);
+			}
+		});
+		
+		backgroundPicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+			if(newValue != null) {
+				drawing.setBackgroundColor(newValue);
 			}
 		});
 		
@@ -158,30 +183,30 @@ public class WindowLayout {
 		
 		BorderPane pane = new BorderPane();
 		
-        Canvas canvas = new Canvas(pane.getWidth(), pane.getHeight());
+        Canvas canvas = new Canvas(1024, 768);
         
-        pane.widthProperty().addListener(event -> canvas.setWidth(pane.getWidth()));
-        pane.heightProperty().addListener(event -> canvas.setHeight(pane.getHeight()));
+        //pane.widthProperty().addListener(event -> canvas.setWidth(pane.getWidth()));
+        //pane.heightProperty().addListener(event -> canvas.setHeight(pane.getHeight()));
         
         drawing = new Drawing(canvas);
         drawing.draw();
         
         pane.getChildren().add(canvas);
         
-        drawing.requiredWidthProperty().addListener((observable, oldValue, newValue) -> {
-        	scrollPaneResize(scrollPane, pane);
-        });
+        //drawing.requiredWidthProperty().addListener((observable, oldValue, newValue) -> {
+        //	scrollPaneResize(scrollPane, pane);
+        //});
         
-        drawing.requiredHeightProperty().addListener((observable, oldValue, newValue) -> {
-        	scrollPaneResize(scrollPane, pane);
-        });
+        //drawing.requiredHeightProperty().addListener((observable, oldValue, newValue) -> {
+        //	scrollPaneResize(scrollPane, pane);
+        //});
         
         scrollPane.widthProperty().addListener(resize ->  {
-        	scrollPaneResize(scrollPane, pane);
+        	scrollPaneResize(scrollPane, pane, canvas);
     	});
     
         scrollPane.heightProperty().addListener(resize -> {
-        	scrollPaneResize(scrollPane, pane);
+        	scrollPaneResize(scrollPane, pane, canvas);
     	});
     
         scrollPane.setContent(pane);
@@ -192,10 +217,12 @@ public class WindowLayout {
 	}
 	
 	/** Nastavi nutnou velikost panelu pro vykresleni platna */ 
-	public void scrollPaneResize(ScrollPane scrollPane, Pane pane) {
+	public void scrollPaneResize(ScrollPane scrollPane, Pane pane, Canvas canvas) {
     	double scrollerSize = 14;
-		double maxWidth = Math.max(drawing.getRequiredWidth()+scrollerSize, scrollPane.getWidth()-scrollerSize);
-		double maxHeight = Math.max(drawing.getRequiredHeight()+scrollerSize, scrollPane.getHeight()-scrollerSize);
+		double maxWidth = Math.max(0+scrollerSize, scrollPane.getWidth()-scrollerSize);
+		double maxHeight = Math.max(0+scrollerSize, scrollPane.getHeight()-scrollerSize);
+		canvas.setWidth(maxWidth);
+		canvas.setHeight(maxHeight);
 		pane.setPrefWidth(maxWidth);
 		pane.setPrefHeight(maxHeight);
 	}

@@ -6,7 +6,7 @@ package cz.pavelzelenka.fractal;
  * @version 2018-04-16
  */
 public class Point {
-	
+
 	/** souradnice */
 	private double x, y;
 	
@@ -28,6 +28,35 @@ public class Point {
 	public void setLocation(double x, double y) {
 		this.x = x;
 		this.y = y;
+	}
+	
+	/**
+	 * Vrati vzdalenost mezi body
+	 * @param point bod
+	 * @return vzdalenost mezi body
+	 */
+	public double getDistance(Point point) {
+		double sx = this.getX() - point.getX();		// slozka smeroveho vektoru
+		double sy = this.getY() - point.getY();		// slozka smeroveho vektoru
+		double d = Math.sqrt(sx*sx + sy*sy);		// delka smeroveho vektoru
+		//System.out.println("Distance: " + this.getX() + " x " + this.getY() + " B: " + point.getX() + " x " + point.getY() );
+		return d;
+	}
+	
+	/**
+	 * Vrati smer
+	 * @param point bod
+	 * @return smer
+	 */
+	public Point getDirection(Point point) {
+		double d = getDistance(point);				// vzdalenost
+		double sx = point.getX() - this.getX();		// slozka smeroveho vektoru
+		double sy = point.getY() - this.getY();		// slozka smeroveho vektoru
+		//System.out.println("Direction: " + this.getX() + " x " + this.getY() + " B: " + point.getX() + " x " + point.getY() );
+		if(d == 0) {
+			return new Point(0, 0);
+		}
+		return new Point(sx/d, sy/d);
 	}
 	
 	/**

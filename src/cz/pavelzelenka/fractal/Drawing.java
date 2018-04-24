@@ -1,47 +1,55 @@
 package cz.pavelzelenka.fractal;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.geometry.Point2D;
-import javafx.scene.SnapshotParameters;
+import cz.pavelzelenka.fractal.fractals.Dragon;
+import cz.pavelzelenka.fractal.fractals.Hilbert;
+import cz.pavelzelenka.fractal.fractals.Koch;
+import cz.pavelzelenka.fractal.fractals.Tree;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.WritableImage;
-import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.ArcType;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
-
+    
 /**
  * Kresba
  * @author Pavel Zelenka A16B0176P
  * @version 2018-04-15
  */
 public class Drawing {
+
+	public static final double MIN_POINT_SIZE = 1D;
+	public static final double MAX_POINT_SIZE = 18D;
+	public static final double MIN_LINE_WIDTH = 1D;
+	public static final double MAX_LINE_WIDTH = 14D;
 	
-	/** Seznam bodu */
-	private List<Point> points = new ArrayList<Point>();
+	/** Usecky */
+	private LineSegment[] currentGen;
+    private LineSegment[] nextGen;    
+    
+    /** Bod */
+    private Point traslation;  
+    
 	/** Vybrany bod */
 	private Point selected = null;
 	/** Zamek akci mysi */
 	private boolean lock = false;
 	
+	/** ID krivky */
+	private int curveID = 3;
+	
 	/** Barva krivky */
-	private Color splineColor = Color.rgb(41, 128, 185);
+	private Color strokeColor = Color.rgb(41, 128, 185);
+	/** Barva pozadi */
+	private Color backgroundColor = Color.rgb(255, 255, 255);
 	/** Sirka cary */
 	private double lineWidth = 2D;
+	/** Sirka cary */
+	private double pointSize = 4D;
 	/** Ovladaci prvek kresleni */
 	private GraphicsContext g;
 	/** Platno */
 	private Canvas activeCanvas;
-
-	/** Pozadovana sirka pro vykresleni obrazku */
-	private DoubleProperty requiredWidth = new SimpleDoubleProperty(0D);
-	/** Pozadovana vysku pro vykresleni obrazku */
-	private DoubleProperty requiredHeight = new SimpleDoubleProperty(0D);
 	
 	/**
 	 * Vytvoreni instance kresby
@@ -53,6 +61,84 @@ public class Drawing {
 		observeCanvasSize();
 		mouseAction();
 	}
+	
+	private void generateAndRedraw(GraphicsContext g, Canvas activeCanvas) {
+		clear();
+		if (currentGen == null) {
+			if(curveID == 2) {
+				Koch koch = new Koch();
+				currentGen = koch.firstGenerationSpecialKoch(g, activeCanvas);
+				traslation = koch.getTraslation();
+			} else if(curveID == 3) {
+				Dragon dragon = new Dragon();
+				currentGen = dragon.firstGeneration(g, activeCanvas);
+				traslation = dragon.getTraslation();
+			} else if(curveID == 4) {
+				Tree tree = new Tree();
+				currentGen = tree.firstGeneration(g, activeCanvas);
+				traslation = tree.getTraslation();
+			} else {
+				Hilbert hilbert = new Hilbert();
+				currentGen = hilbert.firstGeneration(g, activeCanvas);
+				traslation = new Point(MAX_POINT_SIZE/2, MAX_POINT_SIZE/2);
+			}
+		} else {
+			if(curveID == 3) {
+				Dragon dragon = new Dragon();
+				currentGen = dragon.nextGeneration(currentGen);
+			} else if(curveID == 4) {
+				Tree tree = new Tree();
+				currentGen = tree.nextGeneration(currentGen);
+			} else if(curveID == 2) {
+				Koch koch = new Koch();
+				currentGen = koch.nextGeneration(currentGen);
+			} else {
+				Hilbert hilbert = new Hilbert();
+				currentGen = hilbert.nextGeneration(currentGen);
+			}
+		}
+		g.save();
+		g.translate(traslation.getX(), traslation.getY());
+        drawSegments(currentGen, g);
+        g.restore();
+	}
+	
+	private void drawSegments(LineSegment[] coordinates, GraphicsContext g) {
+		g.setLineJoin(StrokeLineJoin.ROUND);
+		g.setLineCap(StrokeLineCap.ROUND);
+		g.setStroke(strokeColor);
+		g.setLineWidth(lineWidth);
+        Point[] points = new Point[coordinates.length];
+        for (int i = 0; i < points.length; i++) {
+        	
+        	double hue = Math.floor((double)i * 360D/(double)(points.length));
+        	double saturation = 1D;
+        	double brightness = 0.8D;
+        	Color color = Color.hsb(hue, saturation, brightness);
+        	g.setStroke(color);
+        	
+        	double x1 = coordinates[i].A.getX();
+        	double y1 = coordinates[i].A.getY();
+        	double x2 = coordinates[i].B.getX();
+        	double y2 = coordinates[i].B.getY();
+        	g.strokeLine(x1, y1, x2, y2);
+        }
+        for (int i = 0; i < points.length; i++) {
+        	double hue = Math.floor((double)i * 360D/(double)(points.length));
+        	double saturation = 1D;
+        	double brightness = 0.8D;
+        	Color color = Color.hsb(hue, saturation, brightness);
+        	g.setFill(color);
+        	g.fillOval(coordinates[i].A.getX()-pointSize/2, coordinates[i].A.getY()-pointSize/2, pointSize, pointSize);
+        	if(i == points.length-1) {
+        		if(coordinates[i].B.getX() == coordinates[0].A.getX()) {
+        			g.fillArc(coordinates[i].B.getX()-pointSize/2, coordinates[i].B.getY()-pointSize/2, pointSize, pointSize, -45D, 180D, ArcType.OPEN);
+        		} else {
+        			g.fillOval(coordinates[i].B.getX()-pointSize/2, coordinates[i].B.getY()-pointSize/2, pointSize, pointSize);
+        		}
+        	}
+        }
+    }
 	
 	/**
 	 * Pozorovani zmen velikosti platna
@@ -80,124 +166,21 @@ public class Drawing {
 	 */
 	public void clear() {
 		g.clearRect(0, 0, activeCanvas.getWidth(), activeCanvas.getHeight());
-	}
-	
-	/**
-	 * Vykresleni mrizky
-	 */
-	public void drawGrid() {
-		double width = activeCanvas.getWidth();
-		double height = activeCanvas.getHeight();
-		int markDis = 10;
-		g.setStroke(Color.rgb(200, 200, 200));
-	
-		Point2D x0 = new Point2D(width/2, 0);
-		Point2D xmax = new Point2D(width/2, height);
-		Point2D y0 = new Point2D(0, height/2);
-		Point2D ymax = new Point2D(width, height/2);
-		Point2D center = new Point2D(width/2, height/2);
-		
-		g.strokeLine(x0.getX(), x0.getY(), xmax.getX(), xmax.getY());
-		g.strokeLine(y0.getX(), y0.getY(), ymax.getX(), ymax.getY());
-		
-		for(int i = (int)center.getX()+markDis; i < width; i+=markDis) {
-			Point2D tr = new Point2D(i, 0);
-			Point2D br = new Point2D(i, height);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-		for(int i = (int)center.getX()-markDis; i > 0; i-=markDis) {
-			Point2D tr = new Point2D(i, 0);
-			Point2D br = new Point2D(i, height);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-		for(int i = (int)center.getY()+markDis; i < height; i+=markDis) {
-			Point2D tr = new Point2D(0, i);
-			Point2D br = new Point2D(width, i);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-		for(int i = (int)center.getY()-markDis; i > 0; i-=markDis) {
-			Point2D tr = new Point2D(0, i);
-			Point2D br = new Point2D(width, i);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-	}
-	
-	/**
-	 * Vykresleni osy X,Y
-	 */
-	public void drawAxis() {
-		double width = activeCanvas.getWidth();
-		double height = activeCanvas.getHeight();
-		int markDis = 10;
-		int markSize = 3;
-		
-		g.setStroke(Color.rgb(50, 50, 50));
-		
-		Point2D x0 = new Point2D(width/2, 0);
-		Point2D xmax = new Point2D(width/2, height);
-		Point2D y0 = new Point2D(0, height/2);
-		Point2D ymax = new Point2D(width, height/2);
-		Point2D center = new Point2D(width/2, height/2);
-		
-		g.strokeLine(x0.getX(), x0.getY(), xmax.getX(), xmax.getY());
-		g.strokeLine(y0.getX(), y0.getY(), ymax.getX(), ymax.getY());
-		
-		for(int i = (int)center.getX()+markDis; i < width; i+=markDis) {
-			Point2D tr = new Point2D(i, height/2-markSize);
-			Point2D br = new Point2D(i, height/2+markSize);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-		for(int i = (int)center.getX()-markDis; i > 0; i-=markDis) {
-			Point2D tr = new Point2D(i, height/2-markSize);
-			Point2D br = new Point2D(i, height/2+markSize);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-		for(int i = (int)center.getY()+markDis; i < height; i+=markDis) {
-			Point2D tr = new Point2D(width/2-markSize, i);
-			Point2D br = new Point2D(width/2+markSize, i);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-		for(int i = (int)center.getY()-markDis; i > 0; i-=markDis) {
-			Point2D tr = new Point2D(width/2-markSize, i);
-			Point2D br = new Point2D(width/2+markSize, i);
-			g.strokeLine(tr.getX(), tr.getY(), br.getX(), br.getY());
-		}
-	}
-	/**
-	 * Vykresleni bodu
-	 */
-	public void drawPoints() {
-		double ps = 10D;			// Point Size
-		double hps = ps/2;			// Half Point Size
-		Point prev = null;
-		for(Point p : points) {
-			if(p != selected) {
-				g.setFill(Color.rgb(39, 174, 96));
-			} else {
-				g.setFill(Color.rgb(211, 84, 0));
-			}
-			if(prev != null) {
-				if(p != selected && prev != selected) {
-					g.setStroke(Color.rgb(39, 174, 96));
-				} else {
-					g.setStroke(Color.rgb(211, 84, 0));
-				}
-				g.strokeLine(prev.getX(), prev.getY(), p.getX(), p.getY());
-			}
-			g.fillOval(p.getX()-hps, p.getY()-hps, 10, 10);
-			prev = p;
-		}
+		g.setFill(backgroundColor);
+		g.fillRect(0, 0, activeCanvas.getWidth(), activeCanvas.getHeight());
 	}
 	
 	/**
 	 * Vykresleni obrazu
 	 */
 	public void draw() {
-		countRequiredWidth();
-		countRequiredHeight();
-	//	drawGrid();
-	//	drawAxis();
-		drawPoints();
+		if (currentGen != null && g != null && traslation != null) {
+			clear();
+			g.save();
+			g.translate(traslation.getX(), traslation.getY());
+	        drawSegments(currentGen, g);
+	        g.restore();
+		}
 	}
 	
 	/**
@@ -205,70 +188,8 @@ public class Drawing {
 	 */
 	public void mousePressed() {
 		activeCanvas.setOnMousePressed(event -> {
-			lock = false;
-		});
-	}
-	
-	/**
-	 * Akce tazeni mysi
-	 */
-	public void mouseDragged() {
-		double ps = 12D;			// Point Size
-		double hps = ps/2;			// Half Point Size
-		activeCanvas.setOnMouseDragged(event -> {
-			for(Point p : points) {
-				if(p.getX()-hps <= event.getX() && p.getX()+hps >= event.getX()) {
-					if(p.getY()-hps <= event.getY() && p.getY()+hps >= event.getY()) {
-						if(!lock) {
-							selected = p;
-							lock = true;
-						}
-					}
-				}
-				if(lock) {
-					double x = event.getX();
-					double y = event.getY();
-					if(x < 0) x = 0;
-					if(y < 0) y = 0;
-					selected.setLocation(x, y);
-					redraw();
-					break;
-				}
-			}
-		});
-	}
-	
-	/**
-	 * Akce kliknuti mysi
-	 */
-	public void mouseClicked() {
-		double ps = 12D;			// Point Size
-		double hps = ps/2;			// Half Point Size
-		activeCanvas.setOnMouseClicked(event -> {
-			if(event.getButton().equals(MouseButton.PRIMARY)) {
-				boolean select = false;
-				for(Point p : points) {
-					if(p.getX()-hps <= event.getX() && p.getX()+hps >= event.getX()) {
-						if(p.getY()-hps <= event.getY() && p.getY()+hps >= event.getY()) {
-							selected = p;
-							select = true;
-						}
-					}
-				}
-				if(!select) {
-					selected = null;
-					lock = false;
-				}
-				if(selected != null) {
-					selected.setLocation(event.getX(), event.getY());
-				}
-				redraw();
-			} else if(event.getButton().equals(MouseButton.SECONDARY)) {
-				Point newPoint = new Point(event.getX(), event.getY());
-				points.add(newPoint);
-				selected = newPoint;
-				redraw();
-			}
+			generateAndRedraw(this.g, this.activeCanvas);
+		//	lock = false;
 		});
 	}
 	
@@ -276,31 +197,55 @@ public class Drawing {
 	 * Akce mysi
 	 */
 	public void mouseAction() {
-		mouseClicked();
-		mouseDragged();
 		mousePressed();
 	}
 	
 	/**
-	 * Vrati barvu krivky
-	 * @return barva krivky
+	 * Zahodit soucasnou spline
 	 */
-	public Color getSplineColor() {
-		return splineColor;
+	public void throwOut() {
+		currentGen = null;
+		redraw();
+	}
+	
+	
+	/**
+	 * Vrati barvu obtazeni
+	 * @return barva obtazeni
+	 */
+	public Color getStrokeColor() {
+		return strokeColor;
 	}
 
 	/**
-	 * Nastavi barvu krivky
-	 * @param splineColor barva krivky
+	 * Nastavi barvu obtazeni
+	 * @param color barva obtazeni
 	 */
-	public void setSplineColor(Color splineColor) {
-		this.splineColor = splineColor;
+	public void setStrokeColor(Color color) {
+		this.strokeColor = color;
 		redraw();
 	}
 
 	/**
+	 * Vrati barvu pozadi
+	 * @return barva pozadi
+	 */
+	public Color getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	/**
+	 * Nastavi barvu pozadi
+	 * @param color barva pozadi
+	 */
+	public void setBackgroundColor(Color color) {
+		this.backgroundColor = color;
+		redraw();
+	}
+	
+	/**
 	 * Vrati sirku cary
-	 * @return  sirka cary
+	 * @return sirka cary
 	 */
 	public double getLineWidth() {
 		return lineWidth;
@@ -314,71 +259,29 @@ public class Drawing {
 		this.lineWidth = lineWidth;
 		redraw();
 	}
+	
+	/**
+	 * Vrati velikost bodu
+	 * @return velikost bodu
+	 */
+	public double getPointSize() {
+		return this.pointSize;
+	}
 
 	/**
-	 * Zahodit soucasnou spline
+	 * Nastavi velikost bodu
+	 * @param pointSize velikost bodu
 	 */
-	public void throwOutSpline() {
-		points.clear();
+	public void setPointSize(double pointSize) {
+		this.pointSize = pointSize;
 		redraw();
 	}
 	
-	/**
-	 * Vrati pozadovanou sirku pro vykresleni obrazku
-	 * @return pozadovana sirka pro vykresleni obrazku
-	 */
-	public double getRequiredWidth() {
-		return requiredWidth.get();
-	}
+    public int getCurve() {
+        return this.curveID;
+    }
 	
-	/**
-	 * Vrati pozadovanou vysku pro vykresleni obrazku
-	 * @return pozadovana vysku pro vykresleni obrazku
-	 */
-	public double getRequiredHeight() {
-		return requiredHeight.get();
-	}
-	
-	/**
-	 * Pozadovana sirka pro vykresleni obrazku
-	 * @return pozadovana sirka pro vykresleni obrazku
-	 */
-	public DoubleProperty requiredWidthProperty() {
-		return requiredWidth;
-	}
-
-	/**
-	 * Pozadovana vysku pro vykresleni obrazku
-	 * @return pozadovana vysku pro vykresleni obrazku
-	 */
-	public DoubleProperty requiredHeightProperty() {
-		return requiredHeight;
-	}
-
-	/**
-	 * Spocte pozadovanou sirku pro vykresleni obrazku
-	 * @return pozadovana sirka pro vykresleni obrazku
-	 */
-	public double countRequiredWidth() {
-		double maxx = 0D;
-		for(Point p : points) {
-			if(p.getX() > maxx) maxx = p.getX();
-		}
-		requiredWidth.set(maxx);
-		return maxx;
-	}
-	
-	/**
-	 * Spocte pozadovanou vysku pro vykresleni obrazku
-	 * @return pozadovana vysku pro vykresleni obrazku
-	 */
-	public double countRequiredHeight() {
-		double maxy = 0D;
-		for(Point p : points) {
-			if(p.getY() > maxy) maxy = p.getY();
-		}
-		requiredHeight.set(maxy);
-		return maxy;
-	}
-	
+    public void setCurve(int id) {
+        this.curveID = id;
+    }
 }

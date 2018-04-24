@@ -1,5 +1,5 @@
 package cz.pavelzelenka.fractal;
-
+ 
 import javafx.scene.image.Image;
 
 /**

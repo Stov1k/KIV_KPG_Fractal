@@ -1,0 +1,65 @@
+\documentclass[12pt]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[IL2]{fontenc}
+\usepackage[czech]{babel}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage[]{algorithm2e}
+\usepackage{enumitem}
+\usepackage{gensymb}
+
+\subject{Západočeská univerzita v\nobreakspace Plzni\\Fakulta aplikovaných věd\\KIV/KPG}
+\author{Pavel Zelenka\\A16B0176P\\zelenkap@students.zcu.cz}
+\date{\today}
+\title{Fraktály}
+
+\begin{document}
+\maketitle
+\pagenumbering{gobble}
+\newpage
+\pagenumbering{arabic}
+\newpage
+\section{Zadání}
+	
+\paragraph{}
+Zadáním úkolu je vytvoření nového programu nebo rozšíření programu ze cvičení, tak aby vykresloval fraktály, které nebyly na cvičení.
+
+\section{Analýza problému}
+
+\paragraph{}
+\textbf{Fraktál} je\nobreakspace seběpodobný útvar, to znamená, že lze pozorovat stále opakující\nobreakspace se tvar. Mezi známe fraktály patří Sierpińského koberec, Sierpińského trojúhelník, či křivka vyplňující prostor.
+
+\paragraph{}
+V této práci se budu zabývat křivka vyplňující prostor, konkrétně \textbf{Hilbertovou křivkou}. Budu implementovat algoritmus, který index bodu Hilbertovy křivky převede do kartézské soustavy souřadnic.
+
+\paragraph{}
+Algoritmus bude předpokládat, že bod s indexem $0$ bude na pozici $[0,0]$. 
+
+\section{Popis řešení}
+
+\paragraph{}
+Vykreslování probíhá ve\nobreakspace třídě \emph{Drawing}. Algortitmy fraktálů\nobreakspace  se nacházejí v balíčku \emph{fractal}.
+
+\newpage
+\section{Uživatelská dokumentace}
+
+\paragraph{}
+Spuštění aplikace se\nobreakspace provede souborem \texttt{Fractal.jar}, který se nachází ve složce \emph{App}.
+
+\begin{figure}[!ht]
+	\centering
+	\label{obr:polekolizi}
+	\includegraphics[width=0.85\textwidth,natwidth=1,natheight=1]{app_gui.pdf}
+	\caption{Okno aplikace}
+\end{figure}
+
+\newpage
+\section{Závěr}
+\paragraph{}
+Úkol jsem řešil v\nobreakspace jazyce \texttt{Java} s použitím grafických knihoven \texttt{JavaFX}. V knihovně JavaFX mi nevyhovovala implementace \texttt{Point2D}, kde není možná změna pozice existujícího bodu, proto je v odevdávané aplikaci vlastní implementace bodu. Nepodařilo\nobreakspace se\nobreakspace mi zjistit, zdali existuje řešení bez nutnosti vlastní implementace.
+
+\section{Reference}
+
+\end{document}
