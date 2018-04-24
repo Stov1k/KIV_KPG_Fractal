@@ -1,12 +1,21 @@
 package cz.pavelzelenka.fractal;
 
+import java.awt.image.RenderedImage;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
@@ -17,11 +26,14 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -81,12 +93,13 @@ public class WindowLayout {
 	 * @return spodni panel
 	 */
 	public Parent getBottomPane() {	
-		HBox hBox = new HBox();
-		hBox.setPadding(new Insets(5D, 5D, 5D, 5D));
-		hBox.setMinHeight(40D);
-		hBox.setAlignment(Pos.CENTER);
-		hBox.setSpacing(5D);
-		hBox.setStyle("-fx-font-size: 9pt;");
+		GridPane gridPane = new GridPane();
+		gridPane.setPadding(new Insets(5D, 5D, 5D, 5D));
+		gridPane.setMinHeight(40D);
+		gridPane.setAlignment(Pos.CENTER);
+		gridPane.setHgap(5D);
+		gridPane.setVgap(5D);
+		gridPane.setStyle("-fx-font-size: 9pt;");
 		
 		Label fractalLabel = new Label("Fractal:");
 		ChoiceBox<Integer> fractalChoiceBox = new ChoiceBox<Integer>(FXCollections.observableArrayList(1, 2, 3, 4));
@@ -96,15 +109,13 @@ public class WindowLayout {
 		ColorPicker colorPicker = new ColorPicker();
 		colorPicker.setValue(drawing.getStrokeColor());
 		colorPicker.setPrefWidth(50D);
+		CheckBox rainbowColor = new CheckBox("Rainbow");
 		
 		Label backgroundLabel = new Label("Background:");
 		ColorPicker backgroundPicker = new ColorPicker();
 		backgroundPicker.setValue(drawing.getBackgroundColor());
 		backgroundPicker.setPrefWidth(50D);
-		
-		VBox pickerVBox = new VBox();
-		pickerVBox.getChildren().addAll(colorLabel, colorPicker, backgroundLabel, backgroundPicker);
-		
+			
 		Label lineWidthLabel = new Label("Line Width:");
 		Slider lineWidthSlider = new Slider(); 
 		lineWidthSlider.setMin(Drawing.MIN_LINE_WIDTH);
@@ -119,16 +130,32 @@ public class WindowLayout {
 		pointSizeSlider.setValue(drawing.getLineWidth());
 		pointSizeSlider.setBlockIncrement(1);
 		
-		VBox sliderVBox = new VBox();
-		sliderVBox.getChildren().addAll(lineWidthLabel, lineWidthSlider, pointSizeLabel, pointSizeSlider);
-		
 		Pane pane = new Pane();
 
-		HBox.setHgrow(pane, Priority.ALWAYS);
+		GridPane.setHgrow(pane, Priority.ALWAYS);
 		
 		Button clearButton = new Button("Clear");
+		clearButton.setMaxHeight(5000D);
 		
-		hBox.getChildren().addAll(fractalLabel, fractalChoiceBox, pickerVBox, sliderVBox, pane, clearButton);
+		gridPane.add(fractalLabel, 0, 0);
+		gridPane.add(fractalChoiceBox, 1, 0);
+		
+		gridPane.add(rainbowColor, 0, 1, 2, 1);
+		
+		gridPane.add(colorLabel, 2, 0);
+		gridPane.add(colorPicker, 3, 0);
+		
+		gridPane.add(backgroundLabel, 2, 1);
+		gridPane.add(backgroundPicker, 3, 1);
+		
+		gridPane.add(lineWidthLabel, 4, 0);
+		gridPane.add(lineWidthSlider, 5, 0);
+		gridPane.add(pointSizeLabel, 4, 1);
+		gridPane.add(pointSizeSlider, 5, 1);		
+		
+		gridPane.add(pane, 6, 0);
+		
+		gridPane.add(clearButton, 7, 0, 1, 2);
 		
 		clearButton.setOnAction(action -> {
 			if(drawing != null) {
@@ -170,7 +197,7 @@ public class WindowLayout {
 			}
 		});
 		
-		return hBox;
+		return gridPane;
 	}
 	
 	/**
@@ -185,21 +212,18 @@ public class WindowLayout {
 		
         Canvas canvas = new Canvas(1024, 768);
         
-        //pane.widthProperty().addListener(event -> canvas.setWidth(pane.getWidth()));
-        //pane.heightProperty().addListener(event -> canvas.setHeight(pane.getHeight()));
-        
         drawing = new Drawing(canvas);
         drawing.draw();
         
         pane.getChildren().add(canvas);
         
-        //drawing.requiredWidthProperty().addListener((observable, oldValue, newValue) -> {
-        //	scrollPaneResize(scrollPane, pane);
-        //});
+        drawing.requiredWidthProperty().addListener((observable, oldValue, newValue) -> {
+        	scrollPaneResize(scrollPane, pane, canvas);
+        });
         
-        //drawing.requiredHeightProperty().addListener((observable, oldValue, newValue) -> {
-        //	scrollPaneResize(scrollPane, pane);
-        //});
+        drawing.requiredHeightProperty().addListener((observable, oldValue, newValue) -> {
+        	scrollPaneResize(scrollPane, pane, canvas);
+        });
         
         scrollPane.widthProperty().addListener(resize ->  {
         	scrollPaneResize(scrollPane, pane, canvas);
@@ -219,8 +243,8 @@ public class WindowLayout {
 	/** Nastavi nutnou velikost panelu pro vykresleni platna */ 
 	public void scrollPaneResize(ScrollPane scrollPane, Pane pane, Canvas canvas) {
     	double scrollerSize = 14;
-		double maxWidth = Math.max(0+scrollerSize, scrollPane.getWidth()-scrollerSize);
-		double maxHeight = Math.max(0+scrollerSize, scrollPane.getHeight()-scrollerSize);
+    	double maxWidth = Math.max(drawing.getRequiredWidth()+scrollerSize, scrollPane.getWidth()-scrollerSize);
+		double maxHeight = Math.max(drawing.getRequiredHeight()+scrollerSize, scrollPane.getHeight()-scrollerSize);
 		canvas.setWidth(maxWidth);
 		canvas.setHeight(maxHeight);
 		pane.setPrefWidth(maxWidth);
@@ -234,10 +258,10 @@ public class WindowLayout {
     
     /** Otevre FileChooser pro ulozeni obrazku */
     private void handleSaveAs() {
-    /*    FileChooser fileChooser = new FileChooser();
+        FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Image");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        fileChooser.setInitialFileName("my_spline.png");
+        fileChooser.setInitialFileName("my_fractal.png");
         
         // Nastaveni filtru pripony
         FileChooser.ExtensionFilter pngExtFilter = new FileChooser.ExtensionFilter("PNG file (.png)", "*.png");
@@ -266,7 +290,6 @@ public class WindowLayout {
         		e.printStackTrace();
         	}
         }
-        */
     }
 	
 }
