@@ -5,8 +5,8 @@ import java.io.File;
 
 import javax.imageio.ImageIO;
 
+import cz.pavelzelenka.fractal.fractals.FractalType;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -26,13 +26,12 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -101,9 +100,10 @@ public class WindowLayout {
 		gridPane.setVgap(5D);
 		gridPane.setStyle("-fx-font-size: 9pt;");
 		
-		Label fractalLabel = new Label("Fractal:");
-		ChoiceBox<Integer> fractalChoiceBox = new ChoiceBox<Integer>(FXCollections.observableArrayList(1, 2, 3, 4));
-		fractalChoiceBox.getSelectionModel().select(drawing.getCurve()-1);
+		ChoiceBox<FractalType> fractalChoiceBox = new ChoiceBox<FractalType>(FractalType.getDefaultList());
+		fractalChoiceBox.setTooltip(new Tooltip("Select a spline"));
+		fractalChoiceBox.getSelectionModel().select(null);
+		fractalChoiceBox.setPrefWidth(150D);
 		
 		Label colorLabel = new Label("Color:");
 		ColorPicker colorPicker = new ColorPicker();
@@ -137,8 +137,7 @@ public class WindowLayout {
 		Button clearButton = new Button("Clear");
 		clearButton.setMaxHeight(5000D);
 		
-		gridPane.add(fractalLabel, 0, 0);
-		gridPane.add(fractalChoiceBox, 1, 0);
+		gridPane.add(fractalChoiceBox, 0, 0, 2, 1);
 		
 		gridPane.add(rainbowColor, 0, 1, 2, 1);
 		
@@ -163,9 +162,15 @@ public class WindowLayout {
 			}
 		});
 		
+		rainbowColor.selectedProperty().addListener((observable, oldValue, newValue) -> {
+			if(newValue != null) {
+				drawing.setRainbowColor(newValue);;
+			}
+		});
+		
 		fractalChoiceBox.valueProperty().addListener((observable, oldValue, newValue) -> {
 			if(newValue != null) {
-				drawing.setCurve(newValue);
+				drawing.setCurve(newValue.getFractal());
 			}
 		});
 		

@@ -5,15 +5,17 @@ import cz.pavelzelenka.fractal.Point;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
-public class Koch {
+public class Koch implements Fractal {
 
+	public static final String NAME = "Koch";
+	
 	/** Usecky */
     private LineSegment[] nextGen;  
 	
     /** Bod */
     private Point traslation;  
     
-    public LineSegment[] firstGenerationSpecialKoch(GraphicsContext g, Canvas activeCanvas) {
+    public LineSegment[] firstGeneration(GraphicsContext g, Canvas activeCanvas) {
 		LineSegment[] triangle = new LineSegment[6];
         for(int i = 0; i < triangle.length; i++) {
         	triangle[i] = new LineSegment();
@@ -85,4 +87,8 @@ public class Koch {
 		return traslation;
 	}
 	
+	@Override
+	public String toString() {
+		return NAME;
+	}
 }

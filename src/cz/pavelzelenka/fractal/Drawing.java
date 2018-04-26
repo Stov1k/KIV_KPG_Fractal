@@ -1,9 +1,9 @@
 package cz.pavelzelenka.fractal;
 
-import cz.pavelzelenka.fractal.fractals.Dragon;
-import cz.pavelzelenka.fractal.fractals.Hilbert;
-import cz.pavelzelenka.fractal.fractals.Koch;
-import cz.pavelzelenka.fractal.fractals.Tree;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import cz.pavelzelenka.fractal.fractals.Fractal;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.SnapshotParameters;
@@ -29,19 +29,15 @@ public class Drawing {
 	
 	/** Usecky */
 	private LineSegment[] currentGen;
-    private LineSegment[] nextGen;    
     
     /** Bod */
     private Point traslation;  
-    
-	/** Vybrany bod */
-	private Point selected = null;
-	/** Zamek akci mysi */
-	private boolean lock = false;
 	
-	/** ID krivky */
-	private int curveID = 3;
+	/** Zvoleny fraktal */
+	private Class fractal = null;
 	
+	/** Duhova barva */
+	private boolean rainbowColor = false;
 	/** Barva krivky */
 	private Color strokeColor = Color.rgb(41, 128, 185);
 	/** Barva pozadi */
@@ -73,38 +69,17 @@ public class Drawing {
 	
 	private void generateAndRedraw(GraphicsContext g, Canvas activeCanvas) {
 		clear();
-		if (currentGen == null) {
-			if(curveID == 2) {
-				Koch koch = new Koch();
-				currentGen = koch.firstGenerationSpecialKoch(g, activeCanvas);
-				traslation = koch.getTraslation();
-			} else if(curveID == 3) {
-				Dragon dragon = new Dragon();
-				currentGen = dragon.firstGeneration(g, activeCanvas);
-				traslation = dragon.getTraslation();
-			} else if(curveID == 4) {
-				Tree tree = new Tree();
-				currentGen = tree.firstGeneration(g, activeCanvas);
-				traslation = tree.getTraslation();
+		
+		if(fractal != null) {
+			Fractal f = getCurveInstance(fractal);
+			if (currentGen == null) {
+				currentGen = f.firstGeneration(g, activeCanvas);
+				traslation = f.getTraslation();
 			} else {
-				Hilbert hilbert = new Hilbert();
-				currentGen = hilbert.firstGeneration(g, activeCanvas);
-				traslation = new Point(MAX_POINT_SIZE/2, MAX_POINT_SIZE/2);
+				currentGen = f.nextGeneration(currentGen);
 			}
 		} else {
-			if(curveID == 3) {
-				Dragon dragon = new Dragon();
-				currentGen = dragon.nextGeneration(currentGen);
-			} else if(curveID == 4) {
-				Tree tree = new Tree();
-				currentGen = tree.nextGeneration(currentGen);
-			} else if(curveID == 2) {
-				Koch koch = new Koch();
-				currentGen = koch.nextGeneration(currentGen);
-			} else {
-				Hilbert hilbert = new Hilbert();
-				currentGen = hilbert.nextGeneration(currentGen);
-			}
+			return;
 		}
 		g.save();
 		g.translate(traslation.getX(), traslation.getY());
@@ -121,13 +96,11 @@ public class Drawing {
 		g.setLineWidth(lineWidth);
         Point[] points = new Point[coordinates.length];
         for (int i = 0; i < points.length; i++) {
-        	
-        	double hue = Math.floor((double)i * 360D/(double)(points.length));
-        	double saturation = 1D;
-        	double brightness = 0.8D;
-        	Color color = Color.hsb(hue, saturation, brightness);
+        	Color color = strokeColor;
+        	if(rainbowColor) {
+        		color = getRainbowColor(i, points.length, 1D, 0.8D);
+        	}
         	g.setStroke(color);
-        	
         	double x1 = coordinates[i].A.getX();
         	double y1 = coordinates[i].A.getY();
         	double x2 = coordinates[i].B.getX();
@@ -135,10 +108,10 @@ public class Drawing {
         	g.strokeLine(x1, y1, x2, y2);
         }
         for (int i = 0; i < points.length; i++) {
-        	double hue = Math.floor((double)i * 360D/(double)(points.length));
-        	double saturation = 1D;
-        	double brightness = 0.8D;
-        	Color color = Color.hsb(hue, saturation, brightness);
+        	Color color = strokeColor;
+        	if(rainbowColor) {
+        		color = getRainbowColor(i, points.length, 1D, 0.8D);
+        	}
         	g.setFill(color);
         	g.fillOval(coordinates[i].A.getX()-pointSize/2, coordinates[i].A.getY()-pointSize/2, pointSize, pointSize);
         	if(i == points.length-1) {
@@ -219,6 +192,37 @@ public class Drawing {
 		redraw();
 		countRequiredWidth();
 		countRequiredHeight();
+	}
+	
+	/**
+	 * Vrati barvu
+	 * @param position aktualni pozice
+	 * @param total celkovy pocet pozic
+	 * @param saturation sytost
+	 * @param brightness svetlost
+	 * @return barva
+	 */
+	public Color getRainbowColor(int position, int total, double saturation, double brightness) {
+    	double hue = Math.floor((double)position * 360D/(double)(total));
+    	Color color = Color.hsb(hue, saturation, brightness);
+    	return color;
+	}
+	
+	/**
+	 * Vrati, zdali je nastavena duhova barva
+	 * @return vrati TRUE, kdyz je nastavena duhova barva
+	 */
+	public boolean isRainbowColor() {
+		return rainbowColor;
+	}
+
+	/**
+	 * Nastavi duhovou barvu
+	 * @return duhova barva krivky
+	 */
+	public void setRainbowColor(boolean rainbowColor) {
+		this.rainbowColor = rainbowColor;
+		redraw();
 	}
 	
 	/**
@@ -371,14 +375,42 @@ public class Drawing {
 		redraw();
 	}
 	
-    public int getCurve() {
-        return this.curveID;
-    }
-	
-    public void setCurve(int id) {
-        this.curveID = id;
+    /**
+     * Nastavi krivku
+     * Asi nejhnusnejsi metoda, kterou jsem kdy napsal...
+     * @param fractalClass trida 
+     */
+    public void setCurve(Class fractalClass) {
+    	this.fractal = fractalClass;
     }
     
+    /**
+     * Vrati instanci krivky
+     * Asi nejhnusnejsi metoda, kterou jsem kdy napsal...
+     * @param fractalClass trida 
+     * @return instance
+     */
+    public Fractal getCurveInstance(Class fractalClass) {
+    	try {
+			Constructor<?>[] c = Class.forName(fractalClass.getName()).getConstructors();
+			Fractal f = (Fractal) c[0].newInstance();
+			return f;
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+    	return null;
+    }
+
 	/**
 	 * Vrati obrazek
 	 * @return obrazek

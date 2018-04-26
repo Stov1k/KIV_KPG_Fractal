@@ -5,8 +5,10 @@ import cz.pavelzelenka.fractal.Point;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
-public class Dragon {
+public class Dragon implements Fractal {
 
+	public static final String NAME = "Dragon";
+	
 	/** Usecky */
     private LineSegment[] nextGen;  
 	
@@ -69,6 +71,11 @@ public class Dragon {
 
 	public Point getTraslation() {
 		return traslation;
+	}
+	
+	@Override
+	public String toString() {
+		return NAME;
 	}
 	
 }

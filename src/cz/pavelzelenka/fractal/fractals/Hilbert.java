@@ -5,8 +5,16 @@ import cz.pavelzelenka.fractal.Point;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
-public class Hilbert {
+/**
+ * Hilbertova krivka
+ * Reseno dle navodu https://marcin-chwedczuk.github.io/iterative-algorithm-for-drawing-hilbert-curve
+ * @author Pavel Zelenka
+ * @version 2018-04-26
+ */
+public class Hilbert implements Fractal {
 
+	public static final String NAME = "Hilbert";
+	
 	/** Usecky */
     private LineSegment[] nextGen;  
 	
@@ -22,37 +30,27 @@ public class Hilbert {
     	return (input & 3);
     }
     
-    private Point hindex2xy(int hindex, int N) {
-
-    	System.out.println("INDEX = " + hindex + " START (N = " + N + ")");
-    	
+    private Point processIndex(int index, int N) {
+    	int processed = index;
     	Point[] positions = new Point[4];
     	positions[0] = new Point(0D, 0D);
     	positions[1] = new Point(0D, 1D);
     	positions[2] = new Point(1D, 1D);
     	positions[3] = new Point(1D, 0D);
-
-        Point tmp = positions[lastBits(hindex)];
-        hindex = (hindex >>> 2);
-
+        Point tmp = positions[lastBits(processed)];
+        processed = (processed >>> 2);
         double x = tmp.getX();
         double y = tmp.getY();
-
-        System.out.println("INDEX >> " + hindex + " x: " + x + " y: " + y);
-         
-        double loc = x;
-        
+        double temp = x;
         for (int n = 4; n <= N; n *= 2) {
             double n2 = n / 2;
-
-            switch (lastBits(hindex)) {
+            switch (lastBits(processed)) {
             	case 0:
-            		loc = x;
+            		temp = x;
             		x = y;
-            		y = loc;
+            		y = temp;
             		break;
             	case 1:
-            		// x se nemeni
             		y = y + n2;
             		break;
             	case 2:
@@ -60,67 +58,45 @@ public class Hilbert {
             		y = y + n2;
             		break;
             	case 3:
-            		loc = y;
-            		y = (n2-1) - x;
-            		x = (n2-1) - loc;
+            		temp = y;
+            		y = (n2 - 1) - x;
+            		x = (n2 - 1) - temp;
             		x = x + n2;
             		break;
             	}
-            hindex = (hindex >>> 2);
-            System.out.println("INDEX >> " + hindex + " x: " + x + " y: " + y);
+            processed = (processed >>> 2);
         }
         return new Point(x, y);
     }
     
 	public LineSegment[] firstGeneration(GraphicsContext g, Canvas activeCanvas) {
-		
 		int N = 2;
-
 		Point prev = new Point(0, 0);
 		Point curr = prev;
-
 		double lineLength = 0.5D * activeCanvas.getHeight();  
-		
 		LineSegment[] line = new LineSegment[N*N];
-		
 		for (int i = 0; i < N*N; i += 1) {
-		    curr = hindex2xy(i, N);
+		    curr = processIndex(i, N);
 		    curr.setLocation(curr.getX()*lineLength, curr.getY()*lineLength);
-
 		    line[i] = new LineSegment(prev, curr);
-		    
 		    prev = curr;
-		    
 		}
-		
-        traslation = new Point(0, 0);
-		
+        traslation = new Point(10, 10);
 		return line;
     }
 	
 	public LineSegment[] nextGeneration(LineSegment[] generation) {	
-		System.out.println("==============================================================");
-		
 		int N = (int) Math.sqrt(generation.length) * 2;
-		
 		Point prev = new Point(0, 0);
 		Point curr = prev;
-		
         nextGen = new LineSegment[N*N];       
-        
         double lineLength = generation[1].A.getDistance(generation[1].B);
-        
-        
 		for (int i = 0; i < N*N; i += 1) {
-		    curr = hindex2xy(i, N);
+		    curr = processIndex(i, N);
 		    curr.setLocation(curr.getX()*(lineLength/2), curr.getY()*(lineLength/2));
-
 		    nextGen[i] = new LineSegment(prev, curr);
-
 		    prev = curr;
-		    
 		}
-		
 		return nextGen;
 		
     }
@@ -133,4 +109,8 @@ public class Hilbert {
 		return traslation;
 	}
 	
+	@Override
+	public String toString() {
+		return NAME;
+	}
 }

@@ -31,13 +31,14 @@ Zadáním úkolu je vytvoření nového programu nebo rozšíření programu ze 
 \paragraph{}
 \textbf{Fraktál} je\nobreakspace seběpodobný útvar, to znamená, že lze pozorovat stále opakující\nobreakspace se tvar. Mezi známe fraktály patří Sierpińského koberec, Sierpińského trojúhelník, či křivka vyplňující prostor.
 
-V této práci se budu zabývat křivka vyplňující prostor, konkrétně \textbf{Hilbertovou křivkou}.
+V této práci se budu zabývat křivka vyplňující prostor, konkrétně \textbf{Hilbertovou křivkou}. V případě iterativní implementace Hilbertovi křivky se bude využívat binární reprezentace indexů bodů, kdy se v algortimu v cyklu bude provádět bitový posun a budou se zjišťovat vždy poslední 2 bity, dle kterých se bude měnit pozice.
 
 \section{Popis řešení}
 
 \paragraph{}
 Vykreslování probíhá ve\nobreakspace třídě \emph{Drawing}. Algortitmy fraktálů\nobreakspace se nacházejí v balíčku \emph{fractal}.
 
+\newpage
 \subsection{Hilbertova křivka}
 \paragraph{}
 V práci je implementován algoritmus, který index bodu Hilbertovy křivky převádí do kartézské soustavy souřadnic bez použití rekurze. Algoritmus předpokládá, že bod s indexem $0$ je na pozici $[0,0]$. V první iteraci existují právě 4 body a počáteční křivka je pevně daná.
@@ -48,7 +49,7 @@ Pozice následujících bodů se dopočítávají podle indexu. Poslední 2 bity
 \begin{figure}[!ht]
 	\centering
 	\label{obr:polekolizi}
-	\includegraphics[width=0.85\textwidth,natwidth=1,natheight=1]{hilbert.pdf}
+	\includegraphics[width=0.6\textwidth,natwidth=1,natheight=1]{hilbert.pdf}
 	\caption{Indexy bodů v třetí iteraci}
 \end{figure}
 
@@ -56,7 +57,7 @@ Pozice následujících bodů se dopočítávají podle indexu. Poslední 2 bity
 \section{Uživatelská dokumentace}
 
 \paragraph{}
-Spuštění aplikace se\nobreakspace provede souborem \texttt{Fractal.jar}, který se nachází ve složce \emph{App}.
+Spuštění aplikace se\nobreakspace provede souborem \texttt{Fractal.jar}, který se nachází ve složce \emph{App}. Po spuštění je nutné vybrat v dolním panelu křivku. Iterace se provede kliknutím na libovolné místo ve vykreslovací oblasti.
 
 \begin{figure}[!ht]
 	\centering
@@ -68,8 +69,9 @@ Spuštění aplikace se\nobreakspace provede souborem \texttt{Fractal.jar}, kter
 \newpage
 \section{Závěr}
 \paragraph{}
-Úkol jsem řešil v\nobreakspace jazyce \texttt{Java} s použitím grafických knihoven \texttt{JavaFX}. V knihovně JavaFX mi nevyhovovala implementace \texttt{Point2D}, kde není možná změna pozice existujícího bodu, proto je v odevdávané aplikaci vlastní implementace bodu. Nepodařilo\nobreakspace se\nobreakspace mi zjistit, zdali existuje řešení bez nutnosti vlastní implementace.
+
 
 \section{Reference}
+Iterative algorithm for drawing Hilbert curve – Marcin Chwedczuk. [online].\\ Dostupné z: \href{https://marcin-chwedczuk.github.io/iterative-algorithm-for-drawing-hilbert-curve}{marcin-chwedczuk.github.io/iterative-algorithm-for-drawing-hilbert-curve}
 
 \end{document}
