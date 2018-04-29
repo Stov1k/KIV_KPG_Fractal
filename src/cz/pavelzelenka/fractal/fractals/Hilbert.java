@@ -11,7 +11,7 @@ import javafx.scene.canvas.GraphicsContext;
  * @author Pavel Zelenka
  * @version 2018-04-26
  */
-public class Hilbert implements Fractal {
+public class Hilbert implements Curve {
 
 	public static final String NAME = "Hilbert";
 	

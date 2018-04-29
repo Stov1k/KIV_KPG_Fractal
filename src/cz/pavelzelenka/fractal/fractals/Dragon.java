@@ -5,7 +5,7 @@ import cz.pavelzelenka.fractal.Point;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
-public class Dragon implements Fractal {
+public class Dragon implements Curve {
 
 	public static final String NAME = "Dragon";
 	

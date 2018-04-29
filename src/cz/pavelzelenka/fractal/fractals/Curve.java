@@ -5,7 +5,7 @@ import cz.pavelzelenka.fractal.Point;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
-public interface Fractal {
+public interface Curve {
 
 	public LineSegment[] firstGeneration(GraphicsContext g, Canvas activeCanvas);
 	

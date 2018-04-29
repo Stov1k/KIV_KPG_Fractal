@@ -3,7 +3,7 @@ package cz.pavelzelenka.fractal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import cz.pavelzelenka.fractal.fractals.Fractal;
+import cz.pavelzelenka.fractal.fractals.Curve;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.SnapshotParameters;
@@ -71,7 +71,7 @@ public class Drawing {
 		clear();
 		
 		if(fractal != null) {
-			Fractal f = getCurveInstance(fractal);
+			Curve f = getCurveInstance(fractal);
 			if (currentGen == null) {
 				currentGen = f.firstGeneration(g, activeCanvas);
 				traslation = f.getTraslation();
@@ -390,10 +390,10 @@ public class Drawing {
      * @param fractalClass trida 
      * @return instance
      */
-    public Fractal getCurveInstance(Class fractalClass) {
+    public Curve getCurveInstance(Class fractalClass) {
     	try {
 			Constructor<?>[] c = Class.forName(fractalClass.getName()).getConstructors();
-			Fractal f = (Fractal) c[0].newInstance();
+			Curve f = (Curve) c[0].newInstance();
 			return f;
 		} catch (SecurityException e) {
 			e.printStackTrace();

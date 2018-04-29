@@ -5,7 +5,7 @@ import cz.pavelzelenka.fractal.Point;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
-public class Koch implements Fractal {
+public class Koch implements Curve {
 
 	public static final String NAME = "Koch";
 	
