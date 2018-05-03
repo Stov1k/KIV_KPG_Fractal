@@ -63,7 +63,7 @@ public class TSquare implements Fractal {
 	public void drawRect(Point point, double side, int iteraction, int max) {
 		currentRectangles++;
 		if(rainbowColor) {
-			g.setFill(getRainbowColor(currentRectangles, totalRectangles, 0.8, 0.8));
+			g.setFill(getRainbowColor(currentRectangles, totalRectangles, 1D, 0.8));
 		}
 		g.fillRect(point.getX()-side/2, point.getY()-side/2, side, side);
 		if(iteraction < max) {

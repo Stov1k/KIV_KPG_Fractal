@@ -100,7 +100,7 @@ public class SierpinskiHexagon implements Fractal {
 			currentHexagon++;
 			for(int i=0; i<hexagon.length; i++) {
 				if(rainbowColor) {
-					g.setStroke(getRainbowColor(currentHexagon, totalHexagons, 0.8, 0.8));
+					g.setStroke(getRainbowColor(currentHexagon, totalHexagons, 1D, 0.8));
 				}
 				LineSegment segment = hexagon[i];
 				g.strokeLine(segment.A.getX(), segment.A.getY(), segment.B.getX(), segment.B.getY());
