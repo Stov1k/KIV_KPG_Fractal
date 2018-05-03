@@ -1,19 +1,11 @@
 package cz.pavelzelenka.fractal;
 
-import java.awt.image.RenderedImage;
-import java.io.File;
-
-import javax.imageio.ImageIO;
-
 import cz.pavelzelenka.fractal.fractals.FractalType;
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -27,12 +19,10 @@ import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -78,11 +68,11 @@ public class WindowLayout {
 	public Parent getMenuBar() {
 		MenuBar menuBar = new MenuBar();
 		Menu fileMenu = new Menu("File");
-		MenuItem saveAsMI = new MenuItem("Save As...");
-		saveAsMI.setOnAction(action -> handleSaveAs());
+		MenuItem fullScreenMI = new MenuItem("Fullscreen");
+		fullScreenMI.setOnAction(action -> stage.setFullScreen(!stage.isFullScreen()));
 		MenuItem closeMI = new MenuItem("Close");
 		closeMI.setOnAction(action -> handleClose());
-		fileMenu.getItems().addAll(saveAsMI, new SeparatorMenuItem(), closeMI);
+		fileMenu.getItems().addAll(fullScreenMI, new SeparatorMenuItem(), closeMI);
 		menuBar.getMenus().add(fileMenu);
 		return menuBar;
 	}
@@ -101,7 +91,7 @@ public class WindowLayout {
 		gridPane.setStyle("-fx-font-size: 9pt;");
 		
 		ChoiceBox<FractalType> fractalChoiceBox = new ChoiceBox<FractalType>(FractalType.getDefaultList());
-		fractalChoiceBox.setTooltip(new Tooltip("Select a spline"));
+		fractalChoiceBox.setTooltip(new Tooltip("Select a fractal"));
 		fractalChoiceBox.getSelectionModel().select(null);
 		fractalChoiceBox.setPrefWidth(150D);
 		
@@ -170,7 +160,7 @@ public class WindowLayout {
 		
 		fractalChoiceBox.valueProperty().addListener((observable, oldValue, newValue) -> {
 			if(newValue != null) {
-				drawing.setCurve(newValue.getFractal());
+				drawing.setFractal(newValue.getFractal());
 			}
 		});
 		
@@ -222,14 +212,6 @@ public class WindowLayout {
         
         pane.getChildren().add(canvas);
         
-        drawing.requiredWidthProperty().addListener((observable, oldValue, newValue) -> {
-        	scrollPaneResize(scrollPane, pane, canvas);
-        });
-        
-        drawing.requiredHeightProperty().addListener((observable, oldValue, newValue) -> {
-        	scrollPaneResize(scrollPane, pane, canvas);
-        });
-        
         scrollPane.widthProperty().addListener(resize ->  {
         	scrollPaneResize(scrollPane, pane, canvas);
     	});
@@ -248,8 +230,8 @@ public class WindowLayout {
 	/** Nastavi nutnou velikost panelu pro vykresleni platna */ 
 	public void scrollPaneResize(ScrollPane scrollPane, Pane pane, Canvas canvas) {
     	double scrollerSize = 14;
-    	double maxWidth = Math.max(drawing.getRequiredWidth()+scrollerSize, scrollPane.getWidth()-scrollerSize);
-		double maxHeight = Math.max(drawing.getRequiredHeight()+scrollerSize, scrollPane.getHeight()-scrollerSize);
+    	double maxWidth = scrollPane.getWidth()-scrollerSize;
+		double maxHeight = scrollPane.getHeight()-scrollerSize;
 		canvas.setWidth(maxWidth);
 		canvas.setHeight(maxHeight);
 		pane.setPrefWidth(maxWidth);
@@ -260,41 +242,5 @@ public class WindowLayout {
 	private void handleClose() {
 		Platform.exit();
 	}
-    
-    /** Otevre FileChooser pro ulozeni obrazku */
-    private void handleSaveAs() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Image");
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        fileChooser.setInitialFileName("my_fractal.png");
-        
-        // Nastaveni filtru pripony
-        FileChooser.ExtensionFilter pngExtFilter = new FileChooser.ExtensionFilter("PNG file (.png)", "*.png");
-        fileChooser.getExtensionFilters().add(pngExtFilter);
-
-        // Zobrazeni ukladaciho dialogu
-        File file = fileChooser.showSaveDialog(stage);
-
-        if(file != null) {
-        	try {
-        		if(!file.getPath().endsWith(".png")) {
-        			file = new File(file.getPath() + ".png");
-        		}
-        		WritableImage splineImage = drawing.getSplineImage();
-        		if(splineImage != null) {
-        			RenderedImage renderedImage = SwingFXUtils.fromFXImage(drawing.getSplineImage(), null);
-        			ImageIO.write(renderedImage, "png", file);
-        		} else {
-        			Alert alert = new Alert(AlertType.WARNING);
-        			alert.setTitle("Warning");
-        			alert.setHeaderText("Image cannot be saved!");
-        			alert.setContentText("Spline does not exist!");
-        			alert.showAndWait();
-        		}
-        	} catch(Exception e) {
-        		e.printStackTrace();
-        	}
-        }
-    }
 	
 }

@@ -9,9 +9,12 @@ import javafx.collections.ObservableList;
  * @version 2018-04-15
  */
 public enum FractalType {
-	HILBERT(Hilbert.NAME, Hilbert.class),
-	DRAGON(Dragon.NAME, Dragon.class),
-	KOCH(Koch.NAME, Koch.class);
+	DRAGON("Dragon", Dragon.class),
+	HEXAFLAKE("Hexaflake", Hexaflake.class),
+	HILBERT("Hilbert", Hilbert.class),
+	KOCH("Koch", Koch.class),
+	SIERPINSKI_HEXAGON("Sierpinski Hexagon", SierpinskiHexagon.class),
+	T_SQUARE("T-Square", TSquare.class);
 
 	/** nazev */
     private final String name;
