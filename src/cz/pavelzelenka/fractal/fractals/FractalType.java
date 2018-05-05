@@ -13,6 +13,7 @@ public enum FractalType {
 	HEXAFLAKE("Hexaflake", Hexaflake.class),
 	HILBERT("Hilbert", Hilbert.class),
 	KOCH("Koch", Koch.class),
+	SIERPINSKI_CARPET("Sierpinski Carpet", SierpinskiCarpet.class),
 	SIERPINSKI_HEXAGON("Sierpinski Hexagon", SierpinskiHexagon.class),
 	T_SQUARE("T-Square", TSquare.class);
 

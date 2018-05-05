@@ -3,13 +3,14 @@ package cz.pavelzelenka.fractal.fractals;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.pavelzelenka.fractal.LineSegment;
 import cz.pavelzelenka.fractal.Point;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class TSquare implements Fractal {
-
+public class SierpinskiCarpet implements Fractal {
+	
 	/** Duhova barva */
 	private boolean rainbowColor = false;
 	/** Ovladaci prvek kresleni */
@@ -17,7 +18,7 @@ public class TSquare implements Fractal {
 	/** Platno */
 	private Canvas activeCanvas;
 	
-	private int maximumStep = 10;
+	private int maximumStep = 8;
 	private int step = 0;
 	private int totalRectangles = 0;
 	private int currentRectangles = 0;
@@ -48,7 +49,7 @@ public class TSquare implements Fractal {
 		currentRectangles = 0;
 		totalRectangles = 0;
 		for(int i = step; i >= 0; i--) {
-			totalRectangles += (int) Math.pow(4, i);
+			totalRectangles += (int) Math.pow(8, i);
 		}
 		drawRect(first, side, 0, step);
 	}
@@ -67,14 +68,22 @@ public class TSquare implements Fractal {
 		}
 		g.fillRect(point.getX()-side/2, point.getY()-side/2, side, side);
 		if(iteraction < max) {
-			Point leftTop = new Point(point.getX()-side/2, point.getY()-side/2);
-			drawRect(leftTop, side/2, iteraction+1, max);
-			Point rightTop = new Point(point.getX()+side/2, point.getY()-side/2);
-			drawRect(rightTop, side/2, iteraction+1, max);
-			Point leftBottom = new Point(point.getX()-side/2, point.getY()+side/2);
-			drawRect(leftBottom, side/2, iteraction+1, max);
-			Point rightBottom = new Point(point.getX()+side/2, point.getY()+side/2);
-			drawRect(rightBottom, side/2, iteraction+1, max);
+			Point leftTop = new Point(point.getX()-side, point.getY()-side);
+			drawRect(leftTop, side/3, iteraction+1, max);
+			Point centerTop = new Point(point.getX(), point.getY()-side);
+			drawRect(centerTop, side/3, iteraction+1, max);
+			Point rightTop = new Point(point.getX()+side, point.getY()-side);
+			drawRect(rightTop, side/3, iteraction+1, max);
+			Point leftCenter = new Point(point.getX()-side, point.getY());
+			drawRect(leftCenter, side/3, iteraction+1, max);
+			Point rightCenter = new Point(point.getX()+side, point.getY());
+			drawRect(rightCenter, side/3, iteraction+1, max);
+			Point leftBottom = new Point(point.getX()-side, point.getY()+side);
+			drawRect(leftBottom, side/3, iteraction+1, max);
+			Point centerBottom = new Point(point.getX(), point.getY()+side);
+			drawRect(centerBottom, side/3, iteraction+1, max);
+			Point rightBottom = new Point(point.getX()+side, point.getY()+side);
+			drawRect(rightBottom, side/3, iteraction+1, max);
 		}
 	}
 	
@@ -91,11 +100,11 @@ public class TSquare implements Fractal {
     	Color color = Color.hsb(hue, saturation, brightness);
     	return color;
 	}
-	
+
 	public void setRainbow(boolean value) {
 		this.rainbowColor = value;
 	}
-	
+
 	public int getMaximumStep() {
 		return maximumStep;
 	}
