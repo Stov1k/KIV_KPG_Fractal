@@ -10,10 +10,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 /**
- * Sierpinsky Carpet
+ * Sierpinsky Carpet (Inverted)
  * @author Pavel Zelenka
  */
-public class SierpinskiCarpet implements Fractal {
+public class SierpinskiCarpetInverted implements Fractal {
 	
 	/** Duhova barva */
 	private boolean rainbowColor = false;
@@ -45,7 +45,7 @@ public class SierpinskiCarpet implements Fractal {
 		double height = activeCanvas.getHeight();
 		double hw = width/2;
 		double hh = height/2;
-		double side = Math.min(width, height);
+		double side = Math.min(width, height)/3;
 		
 		Point first = new Point(hw, hh);
 		points.add(first);
@@ -66,29 +66,27 @@ public class SierpinskiCarpet implements Fractal {
 	 * @param max maximalni iterace
 	 */
 	public void drawRect(Point point, double side, int iteraction, int max) {
-		if(iteraction == max) {
-			currentRectangles++;
-			if(rainbowColor) {
-				g.setFill(getRainbowColor(currentRectangles, totalRectangles, 1D, 0.8));
-			}
-			g.fillRect(point.getX()-side/2, point.getY()-side/2, side, side);
+		currentRectangles++;
+		if(rainbowColor) {
+			g.setFill(getRainbowColor(currentRectangles, totalRectangles, 1D, 0.8));
 		}
+		g.fillRect(point.getX()-side/2, point.getY()-side/2, side, side);
 		if(iteraction < max) {
-			Point leftTop = new Point(point.getX()-side/3, point.getY()-side/3);
+			Point leftTop = new Point(point.getX()-side, point.getY()-side);
 			drawRect(leftTop, side/3, iteraction+1, max);
-			Point centerTop = new Point(point.getX(), point.getY()-side/3);
+			Point centerTop = new Point(point.getX(), point.getY()-side);
 			drawRect(centerTop, side/3, iteraction+1, max);
-			Point rightTop = new Point(point.getX()+side/3, point.getY()-side/3);
+			Point rightTop = new Point(point.getX()+side, point.getY()-side);
 			drawRect(rightTop, side/3, iteraction+1, max);
-			Point leftCenter = new Point(point.getX()-side/3, point.getY());
+			Point leftCenter = new Point(point.getX()-side, point.getY());
 			drawRect(leftCenter, side/3, iteraction+1, max);
-			Point rightCenter = new Point(point.getX()+side/3, point.getY());
+			Point rightCenter = new Point(point.getX()+side, point.getY());
 			drawRect(rightCenter, side/3, iteraction+1, max);
-			Point leftBottom = new Point(point.getX()-side/3, point.getY()+side/3);
+			Point leftBottom = new Point(point.getX()-side, point.getY()+side);
 			drawRect(leftBottom, side/3, iteraction+1, max);
-			Point centerBottom = new Point(point.getX(), point.getY()+side/3);
+			Point centerBottom = new Point(point.getX(), point.getY()+side);
 			drawRect(centerBottom, side/3, iteraction+1, max);
-			Point rightBottom = new Point(point.getX()+side/3, point.getY()+side/3);
+			Point rightBottom = new Point(point.getX()+side, point.getY()+side);
 			drawRect(rightBottom, side/3, iteraction+1, max);
 		}
 	}

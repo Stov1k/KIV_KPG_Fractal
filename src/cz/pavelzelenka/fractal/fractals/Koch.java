@@ -21,7 +21,7 @@ public class Koch implements Fractal, HavePoints {
 	/** Platno */
 	private Canvas activeCanvas;
 	
-	private int maximumStep = 10;
+	private int maximumStep = 15;
 	private int step = 0;
 	
 	/** Usecky */

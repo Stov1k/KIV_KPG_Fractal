@@ -9,6 +9,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+/**
+ * Hexaflake
+ * @author Pavel Zelenka
+ */
 public class Hexaflake implements Fractal {
 	
 	/** Duhova barva */

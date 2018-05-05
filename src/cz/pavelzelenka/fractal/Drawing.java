@@ -8,6 +8,7 @@ import cz.pavelzelenka.fractal.fractals.HavePoints;
 import cz.pavelzelenka.fractal.fractals.Hilbert;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
@@ -117,9 +118,16 @@ public class Drawing {
 	public void mouseClicked() {
 		activeCanvas.setOnMouseClicked(event -> {
 			if(fractalInstance != null) {
-				if(fractalInstance.getStep() != fractalInstance.getMaximumStep()) {
-					this.step++;
-					redraw();
+				if(event.getButton().equals(MouseButton.SECONDARY)) {
+					if(fractalInstance.getStep() > 0) {
+						this.step--;
+						redraw();
+					}
+				} else {
+					if(fractalInstance.getStep() != fractalInstance.getMaximumStep()) {
+						this.step++;
+						redraw();
+					}
 				}
 			}
 		});

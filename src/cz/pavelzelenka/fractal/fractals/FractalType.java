@@ -14,6 +14,7 @@ public enum FractalType {
 	HILBERT("Hilbert", Hilbert.class),
 	KOCH("Koch", Koch.class),
 	SIERPINSKI_CARPET("Sierpinski Carpet", SierpinskiCarpet.class),
+	SIERPINSKI_CARPET_INVERTED("Sierpinski Carpet (Inverted)", SierpinskiCarpetInverted.class),
 	SIERPINSKI_HEXAGON("Sierpinski Hexagon", SierpinskiHexagon.class),
 	T_SQUARE("T-Square", TSquare.class);
 

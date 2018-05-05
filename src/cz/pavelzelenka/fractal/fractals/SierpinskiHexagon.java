@@ -9,6 +9,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+/**
+ * Sierpinsky Hexagon
+ * @author Pavel Zelenka
+ */
 public class SierpinskiHexagon implements Fractal {
 	
 	/** Duhova barva */
