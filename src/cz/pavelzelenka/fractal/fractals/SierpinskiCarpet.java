@@ -51,10 +51,7 @@ public class SierpinskiCarpet implements Fractal {
 		points.add(first);
 		
 		currentRectangles = 0;
-		totalRectangles = 0;
-		for(int i = step; i >= 0; i--) {
-			totalRectangles += (int) Math.pow(8, i);
-		}
+		totalRectangles = (int) Math.pow(8, step);
 		drawRect(first, side, 0, step);
 	}
 	
